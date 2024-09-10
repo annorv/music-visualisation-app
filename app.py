@@ -12,8 +12,14 @@ sns.set(style="whitegrid")
 # Function to load audio file
 @st.cache_data
 def load_audio(file):
-    y, sr = librosa.load(file, sr=None)
-    return y, sr
+    try:
+        y, sr = librosa.load(file, sr=None)
+        if len(y) == 0:
+            raise ValueError("The audio file is empty.")
+        return y, sr
+    except Exception as e:
+        st.error(f"An error occurred while loading the audio file: {e}")
+        return None, None
 
 # Function to plot the waveform
 def plot_waveform(y, sr):
@@ -84,13 +90,18 @@ def main():
         uploaded_file = st.file_uploader("Choose an audio file", type=["mp3", "wav"])
 
         if uploaded_file is not None:
-            y, sr = load_audio(uploaded_file)
-
-            # Visualise different aspects of the audio
-            plot_waveform(y, sr)
-            plot_spectrogram(y, sr)
-            plot_mel_spectrogram(y, sr)
-            plot_beats_and_tempo(y, sr)
+            try:
+                y, sr = load_audio(uploaded_file)
+                if y is None or sr is None:
+                    st.error("There was a problem with the audio file.")
+                else:
+                    # Visualise different aspects of the audio
+                    plot_waveform(y, sr)
+                    plot_spectrogram(y, sr)
+                    plot_mel_spectrogram(y, sr)
+                    plot_beats_and_tempo(y, sr)
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
 
 if __name__ == "__main__":
     main()
