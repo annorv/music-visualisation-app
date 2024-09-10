@@ -4,19 +4,20 @@ import librosa.display
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+from navbar import navbar  # Import the navbar function
 
 # Set the style for seaborn plots
 sns.set(style="whitegrid")
 
-# Load the song
+# Function to load audio file
 @st.cache_data
-def load_audio(file_path):
-    y, sr = librosa.load(file_path, sr=None)
+def load_audio(file):
+    y, sr = librosa.load(file, sr=None)
     return y, sr
 
 # Function to plot the waveform
 def plot_waveform(y, sr):
-    st.write("### Waveform of ASEDA ABBA - AWAKEN")
+    st.write("### Waveform of the Uploaded Audio")
     fig, ax = plt.subplots(figsize=(10, 4))
     librosa.display.waveshow(y, sr=sr, ax=ax)
     ax.set(title="Waveform")
@@ -24,7 +25,7 @@ def plot_waveform(y, sr):
 
 # Function to plot the spectrogram
 def plot_spectrogram(y, sr):
-    st.write("### Spectrogram of ASEDA ABBA - AWAKEN")
+    st.write("### Spectrogram of the Uploaded Audio")
     D = librosa.amplitude_to_db(np.abs(librosa.stft(y)), ref=np.max)
     fig, ax = plt.subplots(figsize=(10, 4))
     img = librosa.display.specshow(D, sr=sr, x_axis='time', y_axis='log', ax=ax)
@@ -34,7 +35,7 @@ def plot_spectrogram(y, sr):
 
 # Function to plot the Mel spectrogram
 def plot_mel_spectrogram(y, sr):
-    st.write("### Mel Spectrogram of ASEDA ABBA - AWAKEN")
+    st.write("### Mel Spectrogram of the Uploaded Audio")
     S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128, fmax=8000)
     S_dB = librosa.power_to_db(S, ref=np.max)
     fig, ax = plt.subplots(figsize=(10, 4))
@@ -58,17 +59,38 @@ def plot_beats_and_tempo(y, sr):
 
 # Main Streamlit app
 def main():
-    st.title("Music Visualization - ASEDA ABBA")
+    st.title("Music Visualisation App")
 
-    # Load the audio file from the data directory
-    audio_path = 'data/ASEDA ABBA - AWAKEN final.mp3'
-    y, sr = load_audio(audio_path)
+    page = navbar()  # Use the navbar function for navigation
 
-    # Visualize different aspects of the audio
-    plot_waveform(y, sr)
-    plot_spectrogram(y, sr)
-    plot_mel_spectrogram(y, sr)
-    plot_beats_and_tempo(y, sr)
+    if page == "Home":
+        st.write("""
+        # Welcome to the Music Visualisation App
+        
+        This app visualises various aspects of your audio files. You can see:
+        - **Waveform**: The audio signal over time.
+        - **Spectrogram**: The frequency spectrum of the audio.
+        - **Mel Spectrogram**: A perceptually motivated spectrogram.
+        - **Beat Tracking**: Identifies beats and estimates the tempo.
+        
+        ## How to Use
+        1. Navigate to the **Upload Audio** page.
+        2. Upload your audio file.
+        3. Visualise the audio file with the different tools available.
+        """)
+        
+    elif page == "Upload Audio":
+        st.write("## Upload Your Audio File")
+        uploaded_file = st.file_uploader("Choose an audio file", type=["mp3", "wav"])
+
+        if uploaded_file is not None:
+            y, sr = load_audio(uploaded_file)
+
+            # Visualise different aspects of the audio
+            plot_waveform(y, sr)
+            plot_spectrogram(y, sr)
+            plot_mel_spectrogram(y, sr)
+            plot_beats_and_tempo(y, sr)
 
 if __name__ == "__main__":
     main()
